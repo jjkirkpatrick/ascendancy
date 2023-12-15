@@ -1,0 +1,34 @@
+(
+    [
+        (
+            faction_attributes: (
+                id: (
+                    id: 1,
+                ),
+                name: "Galactic Empire",
+            ),
+            faction_bank: (
+                balance: 50000,
+                total_deposits: 60000,
+                total_withdrawals: 10000,
+                total_loans: 5000,
+                total_loans_repaid: 3000
+            )
+        ),
+        (
+            faction_attributes: (
+                id: (
+                    id: 2,
+                ),
+                name: "Rebel Alliance",
+            ),
+            faction_bank: (
+                balance: 30000,
+                total_deposits: 40000,
+                total_withdrawals: 10000,
+                total_loans: 7000,
+                total_loans_repaid: 4000
+            )
+        )
+    ]
+)

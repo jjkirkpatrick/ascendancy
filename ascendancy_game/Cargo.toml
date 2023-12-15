@@ -1,0 +1,15 @@
+[package]
+name = "ascendancy_game"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+authors = ["Leafwing Studios"]
+edition = "2021"
+
+[dependencies]
+bevy = {version = "0.12.1"}
+ascendancy_lib ={ path = "../ascendancy_lib", version = "0.1"}
+bevy-inspector-egui = "0.21.0"
+bevy_screen_diagnostics = "0.4.0"
+bevy_common_assets = {version="0.8.0", features=["ron"]}
+bevy_mod_picking = "0.17.0"
+big-brain =  { git = "https://github.com/zkat/big-brain", rev="bdf51c3"}

@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "ascendancy_game", 
+    "ascendancy_lib", 
+    "ascendancy_macros", 
+    "tools/ci"
+]
+
+default-members = ["ascendancy_game","ascendancy_lib"]
+
+# Enable max dependenacy optimizations without impacting release compiles
+[profile.dev.package."*"]
+opt-level = 3
