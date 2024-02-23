@@ -77,11 +77,23 @@ pub fn listen_for_clicked_event(
 }
 
 /// An event that is triggered when the user clicks on an entity.
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub struct UpdateSelectedItems(Entity, f32);
 
 impl From<ListenerInput<Pointer<Down>>> for UpdateSelectedItems {
     fn from(event: ListenerInput<Pointer<Down>>) -> Self {
-        UpdateSelectedItems(event.target, event.hit.depth)
+        let update_selected_items = UpdateSelectedItems(event.target, event.hit.depth);
+        update_selected_items.debug();
+        update_selected_items
     }
+}
+
+
+impl UpdateSelectedItems {
+    
+    /// Prints the current state of `UpdateSelectedItems` for debugging purposes.
+    pub fn debug(&self) {
+        println!("UpdateSelectedItems: {:?}", self);
+    }
+
 }

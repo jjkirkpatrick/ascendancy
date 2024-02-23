@@ -172,10 +172,10 @@ fn pan_camera(
     let (mut camera_transform, mut camera_settings, action_state) = query.single_mut();
 
     // Only pan if PlayerAction::Select is active
-    if action_state.pressed(PlayerAction::Select) {
+    if action_state.pressed(&PlayerAction::Select) {
         camera_settings.camera_mode = CameraMode::Free; // Set to Free mode when panning
 
-        let camera_pan_vector = action_state.axis_pair(PlayerAction::Pan).unwrap();
+        let camera_pan_vector = action_state.axis_pair(&PlayerAction::Pan).unwrap();
 
         // Calculate speed influenced by delta time and acceleration
         let scaled_speed = camera_settings.pan_speed.delta(time.delta());
@@ -204,7 +204,7 @@ fn zoom_camera(
     let (mut camera_projection, mut camera_settings, action_state) = query.single_mut();
     // Here, we use the `action_value` method to extract the total net amount that the mouse wheel has travelled
     // Up and right axis movements are always positive by default
-    let zoom_delta = action_state.value(PlayerAction::Zoom);
+    let zoom_delta = action_state.value(&PlayerAction::Zoom);
 
     // We want to zoom in when we use mouse wheel up
     // so we increase the scale proportionally
@@ -232,8 +232,8 @@ fn rotate_camera(
     // match PlayerAction::RotateCameraLeft and PlayerAction::RotateCameraLeft
 
     match (
-        action_state.pressed(PlayerAction::RotateCameraLeft),
-        action_state.pressed(PlayerAction::RotateCameraRight),
+        action_state.pressed(&PlayerAction::RotateCameraLeft),
+        action_state.pressed(&PlayerAction::RotateCameraRight),
     ) {
         (true, false) => {
             camera_settings.camera_mode = CameraMode::Free;
@@ -264,7 +264,7 @@ fn reset_camera_positon(
 ) {
     let (mut camera_transform, mut camera_settings, action_state) = query.single_mut();
 
-    if action_state.pressed(PlayerAction::ResetCameraPosition) {
+    if action_state.pressed(&PlayerAction::ResetCameraPosition) {
         camera_settings.camera_mode = CameraMode::Free;
         camera_transform.translation = Vec3::new(0., 0., 200.);
         camera_transform.rotation = Quat::from_rotation_z(0.);

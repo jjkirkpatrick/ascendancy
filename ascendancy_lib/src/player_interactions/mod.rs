@@ -1,12 +1,7 @@
 use bevy::prelude::*;
-use leafwing_input_manager::{prelude::*, user_input::InputKind};
+use leafwing_input_manager::prelude::*;
 
-use leafwing_input_manager::{
-    prelude::{ActionState, DualAxis, InputManagerPlugin, InputMap},
-    user_input::UserInput,
-    Actionlike,
-};
-
+use leafwing_input_manager::Actionlike;
 use self::selection::{listen_for_clicked_event, UpdateSelectedItems};
 
 pub(crate) mod camera;
@@ -75,10 +70,10 @@ impl PlayerAction {
     fn kbm_binding(&self) -> UserInput {
         match self {
             Self::Select => UserInput::Single(InputKind::Mouse(MouseButton::Left)),
-            Self::TogglePause => UserInput::Single(InputKind::Keyboard(KeyCode::Space)),
+            Self::TogglePause => UserInput::Single(InputKind::PhysicalKey(KeyCode::Space)),
             Self::Deselect => UserInput::Single(InputKind::Mouse(MouseButton::Right)),
-            Self::SelectStructure => UserInput::Single(InputKind::Keyboard(KeyCode::Key1)),
-            Self::CenterCameraOnSelection => UserInput::Single(InputKind::Keyboard(KeyCode::L)),
+            Self::SelectStructure => UserInput::Single(InputKind::PhysicalKey(KeyCode::Digit1)),
+            Self::CenterCameraOnSelection => UserInput::Single(InputKind::PhysicalKey(KeyCode::KeyL)),
             Self::DragCamera => UserInput::Single(InputKind::Mouse(MouseButton::Middle)),
             Self::Pan => UserInput::Single(InputKind::DualAxis(DualAxis::mouse_motion())),
             // Plus and Equals are swapped. See:
@@ -87,19 +82,30 @@ impl PlayerAction {
 
             Self::Zoom => UserInput::Single(InputKind::SingleAxis(SingleAxis::mouse_wheel_y())),
 
-            Self::RotateCameraLeft => KeyCode::Q.into(),
-            Self::RotateCameraRight => KeyCode::E.into(),
-            Self::ResetCameraPosition => KeyCode::R.into(),
+            Self::RotateCameraLeft => KeyCode::KeyQ.into(),
+            Self::RotateCameraRight => KeyCode::KeyE.into(),
+            Self::ResetCameraPosition => KeyCode::KeyR.into(),
         }
     }
 
     /// The default key bindings
     fn default_input_map() -> InputMap<PlayerAction> {
         let mut input_map = InputMap::default();
-
-        for variant in PlayerAction::variants() {
-            input_map.insert(variant.kbm_binding(), variant);
-        }
+    
+        input_map.insert(Self::Select, Self::Select.kbm_binding());
+        input_map.insert(Self::TogglePause, Self::TogglePause.kbm_binding());
+        input_map.insert(Self::Deselect, Self::Deselect.kbm_binding());
+        input_map.insert(Self::SelectStructure, Self::SelectStructure.kbm_binding());
+        input_map.insert(Self::CenterCameraOnSelection, Self::CenterCameraOnSelection.kbm_binding());
+        input_map.insert(Self::DragCamera, Self::DragCamera.kbm_binding());
+        input_map.insert(Self::Pan, Self::Pan.kbm_binding());
+        input_map.insert(Self::Zoom, Self::Zoom.kbm_binding());
+        input_map.insert(Self::ZoomIn, Self::ZoomIn.kbm_binding());
+        input_map.insert(Self::ZoomOut, Self::ZoomOut.kbm_binding());
+        input_map.insert(Self::RotateCameraLeft, Self::RotateCameraLeft.kbm_binding());
+        input_map.insert(Self::RotateCameraRight, Self::RotateCameraRight.kbm_binding());
+        input_map.insert(Self::ResetCameraPosition, Self::ResetCameraPosition.kbm_binding());
+        // Return the input_map
         input_map
     }
 }

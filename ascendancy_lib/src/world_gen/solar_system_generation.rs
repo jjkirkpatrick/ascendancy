@@ -3,6 +3,7 @@ use std::collections::HashSet;
 
 use bevy::prelude::*;
 use bevy::render::{mesh::Indices, render_resource::PrimitiveTopology};
+use bevy::render::render_asset::RenderAssetUsages;
 use hexx::*;
 use rand::Rng; // Bring the trait into scope
 
@@ -18,12 +19,12 @@ use bevy_mod_picking::prelude::*;
 /// World size of the hexagons (outer radius)
 const HEX_SIZE: Vec2 = Vec2::splat(512.0);
 /// The radius of the map.
-const MAP_RADIUS: u32 = 5;
+const MAP_RADIUS: u32 = 1;
 
 /// Hex grid setup
 const COLORS: [Color; 3] = [Color::WHITE, Color::BLUE, Color::RED];
 /// The chunk size of the map.
-const CHUNK_SIZE: u32 = 5;
+const CHUNK_SIZE: u32 = 1;
 
 /// The map resource.
 #[derive(Debug, Resource)]
@@ -45,9 +46,11 @@ pub fn create_galaxy_solar_systems(
         ..default()
     };
 
+    info!("Creating solar systems");
+
     let mesh = hexagonal_plane(&layout);
     let mesh_handle = meshes.add(mesh);
-    let materials = COLORS.map(|c| materials.add(c.into()));
+    let materials = COLORS.map(|c| materials.add(c));
     let mut rng = rand::thread_rng(); // Create a new random number generator
     let mut system_count = 0;
     let entities = Hex::ZERO
@@ -74,7 +77,7 @@ pub fn create_galaxy_solar_systems(
                         //RaycastPickTarget::default(),
                         On::<Pointer<Down>>::send_event::<UpdateSelectedItems>(),
                         ColorMesh2dBundle {
-                            transform: Transform::from_xyz(pos.x, pos.y, 0.0)
+                            transform: Transform::from_xyz(pos.x, pos.y, -1.0)
                                 .with_scale(Vec3::splat(0.9)),
                             mesh: mesh_handle.clone().into(),
                             material: materials[color_index as usize].clone(),
@@ -82,7 +85,7 @@ pub fn create_galaxy_solar_systems(
                         },
                         Name::new(format!("System - {},{}", hex.x, hex.y)),
                     ))
-                    .with_children(|b: &mut ChildBuilder<'_, '_, '_>| {
+                    .with_children(|b: &mut ChildBuilder<>| {
                         b.spawn((Text2dBundle {
                             text: Text::from_section(
                                 format!("{},{}", hex.x, hex.y),
@@ -151,6 +154,7 @@ pub fn spawn_stargates(
             let destination_system_attributes = solar_systems
                 .get_component::<SystemAttributes>(destination_system)
                 .unwrap();
+
             established_connections.insert((system_entity, destination_system));
 
             let relative_stargate_position = random_stargate_position(HEX_SIZE, Vec3::ZERO);
@@ -223,7 +227,6 @@ pub fn spawn_stargates(
                 },
                 destination_system_gate,
                 PickableBundle::default(),
-                //RaycastPickTarget::default(),
                 Name::new(format!(
                     "Stargate connected to {:?} from {:?}",
                     origin_stargate_id, destination_stargate_id
@@ -260,7 +263,7 @@ pub fn spawn_stargates(
 
             commands
                 .entity(origin_stargate)
-                .with_children(|b: &mut ChildBuilder<'_, '_, '_>| {
+                .with_children(|b: &mut ChildBuilder<>| {
                     b.spawn((
                         SpriteBundle {
                             texture: asset_server.load("sprites/icons/line.png"),
@@ -281,11 +284,11 @@ pub fn spawn_stargates(
 /// Returns a mesh for a hexagonal plane.
 fn hexagonal_plane(hex_layout: &HexLayout) -> Mesh {
     let mesh_info = PlaneMeshBuilder::new(hex_layout).facing(Vec3::Z).build();
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList,RenderAssetUsages::RENDER_WORLD);
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, mesh_info.vertices);
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, mesh_info.normals);
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, mesh_info.uvs);
-    mesh.set_indices(Some(Indices::U16(mesh_info.indices)));
+    mesh.insert_indices(Indices::U16(mesh_info.indices));
     mesh
 }
 

@@ -6,16 +6,23 @@ license = "MIT OR Apache 2.0"
 edition = "2021"
 
 [dependencies]
-bevy = {version = "0.12.1"}
+bevy = {version = "0.13.0"}
 # bevy_kira_audio ={ git = "https://github.com/NiklasEi/bevy_kira_audio?branch=bevy_main", features = ["mp3"]}
 rand = "0.8"
 # template_macros = {version = "0.1", path = "../ascendancy_macros"}
 petitset = "0.2"
 serde = "1.0.152"
 derive_more = "0.99.17"
-leafwing-input-manager = "0.11.2"
-hexx = "0.12.0"
+leafwing-input-manager = "0.13.2"
+hexx = "0.15.0"
 petgraph = "0.6.4"
-bevy_mod_picking = "0.17.0"
-big-brain =  { git = "https://github.com/zkat/big-brain", rev="bdf51c3"}
-futures-lite = "2.1.0"
+bevy_mod_picking = { git = "https://github.com/StrikeForceZero/bevy_mod_picking", rev="0b6ec5c"}
+big-brain =  { git = "https://github.com/zkat/big-brain", rev="50415e5"}
+futures-lite = "2.2.0"
+webbrowser = { version = "0.8", features = ["hardened"] }
+bevy_kira_audio = { version = "0.19" }
+bevy_asset_loader = { version = "0.20.0" }
+
+
+[profile.release]
+debug = true

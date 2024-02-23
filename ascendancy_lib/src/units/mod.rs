@@ -31,7 +31,7 @@ impl Plugin for UnitPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SystemGraph::default())
             .add_systems(
-                PreUpdate,
+                FixedUpdate,
                 (
                     wander_decision_system.in_set(BigBrainSet::Actions),
                     wander_movement_system.in_set(BigBrainSet::Actions),

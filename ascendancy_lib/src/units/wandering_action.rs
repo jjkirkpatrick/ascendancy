@@ -49,8 +49,9 @@ pub fn wander_decision_system(
             .unwrap();
 
         if *action_state == ActionState::Requested {
-            let rand_position: Vec3 =
+            let mut rand_position: Vec3 =
                 random_position_in_system(Vec2::splat(512.), solar_system_transform.translation);
+            rand_position.z = 0.1;
             let transform = Transform::from_translation(rand_position);
             wander.target = Some(transform);
             *action_state = ActionState::Executing;

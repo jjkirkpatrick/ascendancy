@@ -1,6 +1,5 @@
 use crate::{
-    solar_system::attributes::SystemAttributes,
-    units::{
+    loading::loading::TextureAssets, solar_system::attributes::SystemAttributes, units::{
         agent::Agent,
         fly_to_system_action::{
             FlyToSystem,
@@ -8,21 +7,23 @@ use crate::{
             WantToFlyToSystem,
         },
         wandering_action::{Wander, WantToWander},
-    },
+    }
 };
 use bevy::prelude::*;
 use big_brain::{prelude::Highest, thinker::Thinker};
 use rand::seq::SliceRandom;
 use rand::Rng;
+use crate::GameState;
 
 /// The number of agents to spawn
-const AGENTS_TO_SPAWN: u32 = 10000;
+const AGENTS_TO_SPAWN: u32 = 50000;
 
 /// Spawns a new agents `AGENTS_TO_SPAWN` number of times
 pub fn spawn_agent(
     mut commands: Commands,
     query: Query<(Entity, &SystemAttributes, &Transform)>,
-    asset_server: Res<AssetServer>,
+    mut state: ResMut<NextState<GameState>>,
+    textures: Res<TextureAssets>
 ) {
     // Build the thinker
 
@@ -47,13 +48,13 @@ pub fn spawn_agent(
             );
 
         if let Some((_, solar_system, position)) = systems_with_positions.choose(&mut rng) {
-            let spawn_position =
+            let mut spawn_position =
                 random_position_in_system(Vec2::splat(512.0), position.translation);
-
+            spawn_position.z = 0.1;
             let _e = commands
                 .spawn((
                     SpriteBundle {
-                        texture: asset_server.load("sprites/icons/ships/small-trader.png"),
+                        texture: textures.small_trader.clone().into(),
                         transform: Transform {
                             translation: spawn_position,
                             scale: Vec3::splat(1.0),
@@ -76,6 +77,9 @@ pub fn spawn_agent(
             //eprintln!("No SolarSystem entities found to spawn agent at!");
         }
     }
+
+    state.set(GameState::Playing);
+
 }
 
 /// Returns a random position in the system.
