@@ -2,24 +2,29 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use bevy::prelude::*;
-use bevy::render::{mesh::Indices, render_resource::PrimitiveTopology};
 use bevy::render::render_asset::RenderAssetUsages;
+use bevy::render::{mesh::Indices, render_resource::PrimitiveTopology};
 use hexx::*;
 use rand::Rng; // Bring the trait into scope
 
 use crate::faction::attributes::FactionID;
-use crate::player_interactions::selection::UpdateSelectedItems;
+use crate::player_interactions::selection::UpdateSelectedItemEvent;
 use crate::solar_system::attributes::SystemAttributes;
-use crate::solar_system::gates::JumpGates;
-use crate::solar_system::gates::SystemGate;
 use crate::solar_system::SolarSystem;
+use crate::structures::services::dock::Dock;
+use crate::structures::services::market::Market;
+use crate::structures::services::solar_generator::SolarGenerator;
+use crate::structures::services::StationServices;
+use crate::structures::stargate::JumpGates;
+use crate::structures::stargate::Stargate;
+use crate::structures::station::Station;
 
 use bevy_mod_picking::prelude::*;
 
 /// World size of the hexagons (outer radius)
 const HEX_SIZE: Vec2 = Vec2::splat(512.0);
 /// The radius of the map.
-const MAP_RADIUS: u32 = 1;
+const MAP_RADIUS: u32 = 50;
 
 /// Hex grid setup
 const COLORS: [Color; 3] = [Color::WHITE, Color::BLUE, Color::RED];
@@ -75,7 +80,7 @@ pub fn create_galaxy_solar_systems(
                         },
                         PickableBundle::default(),
                         //RaycastPickTarget::default(),
-                        On::<Pointer<Down>>::send_event::<UpdateSelectedItems>(),
+                        On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>(),
                         ColorMesh2dBundle {
                             transform: Transform::from_xyz(pos.x, pos.y, -1.0)
                                 .with_scale(Vec3::splat(0.9)),
@@ -85,7 +90,7 @@ pub fn create_galaxy_solar_systems(
                         },
                         Name::new(format!("System - {},{}", hex.x, hex.y)),
                     ))
-                    .with_children(|b: &mut ChildBuilder<>| {
+                    .with_children(|b: &mut ChildBuilder| {
                         b.spawn((Text2dBundle {
                             text: Text::from_section(
                                 format!("{},{}", hex.x, hex.y),
@@ -151,9 +156,9 @@ pub fn spawn_stargates(
                     .unwrap()
             });
             let destination_system = possible_destinations[0].0;
-            let destination_system_attributes = solar_systems
-                .get_component::<SystemAttributes>(destination_system)
-                .unwrap();
+
+            let (_, _, destination_system_attributes, _) =
+                solar_systems.get(destination_system).unwrap();
 
             established_connections.insert((system_entity, destination_system));
 
@@ -171,8 +176,12 @@ pub fn spawn_stargates(
             let destination_stargate_id = star_gate_count;
             star_gate_count += 1;
 
-            let origin_system_gate = SystemGate {
+            let origin_system_gate = Stargate {
                 id: origin_stargate_id,
+                name: format!(
+                    "Stargate connected to  {:?} from {:?}",
+                    destination_stargate_id, origin_stargate_id
+                ),
                 distance: 10000,
                 destination_gate_id: destination_stargate_id, // Using placeholder for now
                 origin_system_id: solar_system_attributes.id,
@@ -180,8 +189,12 @@ pub fn spawn_stargates(
                 is_active: true,
             };
 
-            let destination_system_gate = SystemGate {
+            let destination_system_gate = Stargate {
                 id: destination_stargate_id,
+                name: format!(
+                    "Stargate connected to {:?} from {:?}",
+                    origin_stargate_id, destination_stargate_id
+                ),
                 distance: 10000,
                 destination_gate_id: origin_stargate_id, // Using placeholder for now
                 origin_system_id: destination_system_attributes.id,
@@ -199,7 +212,7 @@ pub fn spawn_stargates(
                     origin_system_gate,
                     PickableBundle::default(),
                     //RaycastPickTarget::default(),
-                    On::<Pointer<Down>>::send_event::<UpdateSelectedItems>(),
+                    On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>(),
                     Name::new(format!(
                         "Stargate connected to  {:?} from {:?}",
                         destination_stargate_id, origin_stargate_id
@@ -207,9 +220,7 @@ pub fn spawn_stargates(
                 ))
                 .id();
 
-            let dest_system_transform = solar_systems
-                .get_component::<Transform>(destination_system)
-                .unwrap();
+            let (_, dest_system_transform, _, _) = solar_systems.get(destination_system).unwrap();
             let relative_dest_position = random_stargate_position(HEX_SIZE, Vec3::ZERO);
 
             let dest_transform = Transform::from_xyz(
@@ -227,6 +238,7 @@ pub fn spawn_stargates(
                 },
                 destination_system_gate,
                 PickableBundle::default(),
+                On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>(),
                 Name::new(format!(
                     "Stargate connected to {:?} from {:?}",
                     origin_stargate_id, destination_stargate_id
@@ -263,7 +275,7 @@ pub fn spawn_stargates(
 
             commands
                 .entity(origin_stargate)
-                .with_children(|b: &mut ChildBuilder<>| {
+                .with_children(|b: &mut ChildBuilder| {
                     b.spawn((
                         SpriteBundle {
                             texture: asset_server.load("sprites/icons/line.png"),
@@ -281,10 +293,61 @@ pub fn spawn_stargates(
     }
 }
 
+pub fn spawn_space_station(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    solar_systems: Query<(&Transform, &SystemAttributes), With<SystemAttributes>>,
+) {
+    for (system_transform, system_attributes) in solar_systems.iter() {
+        let mut station = Station::new(
+            system_attributes.id as u32,
+            format!("Station {}", system_attributes.id),
+            system_attributes.id,
+        );
+
+        station
+            .add_service(StationServices::Market(Market::new()))
+            .unwrap();
+        station
+            .add_service(StationServices::Dock(Dock::new(
+                String::from("Docking Bay 1"),
+                20,
+            )))
+            .unwrap();
+        station
+            .add_service(StationServices::SolarGenerator(SolarGenerator::new(
+                String::from("Solar Generator 1"),
+            )))
+            .unwrap();
+
+        commands.spawn((
+            station,
+            PickableBundle::default(),
+            On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>(),
+            SpriteBundle {
+                texture: asset_server.load("sprites/icons/structures/station_1.png"),
+                transform: Transform {
+                    translation: Vec3::new(
+                        system_transform.translation.x,
+                        system_transform.translation.y,
+                        system_transform.translation.z.max(1.0),
+                    ),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            Name::new(format!("Station {}", system_attributes.id)),
+        ));
+    }
+}
+
 /// Returns a mesh for a hexagonal plane.
 fn hexagonal_plane(hex_layout: &HexLayout) -> Mesh {
     let mesh_info = PlaneMeshBuilder::new(hex_layout).facing(Vec3::Z).build();
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList,RenderAssetUsages::RENDER_WORLD);
+    let mut mesh = Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::RENDER_WORLD,
+    );
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, mesh_info.vertices);
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, mesh_info.normals);
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, mesh_info.uvs);

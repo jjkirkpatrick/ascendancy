@@ -7,28 +7,33 @@
 #![allow(clippy::type_complexity)]
 
 use bevy::prelude::*;
+
+/// Ui
+pub mod Ui;
+/// Units module
+pub mod agent;
+/// Asset management module
+pub mod asset_management;
 /// Enum iterator module
 pub mod enum_iter;
 /// Faction module
 pub mod faction;
 /// Graphics module
 pub mod graphics;
+/// Items module
+pub mod items;
+///Asset loading
+pub mod loading;
+/// Menu manager
+pub mod menu;
 /// Player interactions module
 pub mod player_interactions;
 /// Solar system module
 pub mod solar_system;
-/// Units module
-pub mod units;
+/// structures
+pub mod structures;
 /// world generation module
 pub mod world_gen;
-/// Menu manager
-pub mod menu;
-///Asset loading
-pub mod loading;
-///debug plugin
-pub mod debug;
-
-
 /// define game states
 #[derive(States, Default, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum GameState {

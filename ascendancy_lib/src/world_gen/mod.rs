@@ -5,6 +5,8 @@ use crate::world_gen::generate_system_path::create_system_graph;
 use crate::world_gen::npc_generation::spawn_agent;
 use crate::world_gen::solar_system_generation::{create_galaxy_solar_systems, spawn_stargates};
 use crate::GameState;
+
+use self::solar_system_generation::spawn_space_station;
 /// Set the game state to align systems with their respective runtimes
 pub struct WorldGenPlugin;
 
@@ -19,23 +21,21 @@ pub(crate) mod solar_system_generation;
 
 impl Plugin for WorldGenPlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<GameState>()
-            .add_systems(
-                OnEnter(GameState::WorldGenerating),
-                (
-                    create_galaxy_solar_systems,
-                    spawn_stargates,
-                    create_system_graph,
-                    create_faction_entities,
-                    assign_systems_to_factions,
-                    apply_deferred,
-                    spawn_agent,
-                )
-                    .chain(),
-            );
-            // The manage_state method has been removed, so we can't use it here anymore.
-            // We need to replace it with the appropriate logic or method.
+        app.init_state::<GameState>().add_systems(
+            OnEnter(GameState::WorldGenerating),
+            (
+                create_galaxy_solar_systems,
+                spawn_stargates,
+                create_system_graph,
+                create_faction_entities,
+                assign_systems_to_factions,
+                apply_deferred,
+                spawn_agent,
+                spawn_space_station,
+            )
+                .chain(),
+        );
+        // The manage_state method has been removed, so we can't use it here anymore.
+        // We need to replace it with the appropriate logic or method.
     }
 }
-
-

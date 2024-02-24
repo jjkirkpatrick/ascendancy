@@ -22,7 +22,8 @@ futures-lite = "2.2.0"
 webbrowser = { version = "0.8", features = ["hardened"] }
 bevy_kira_audio = { version = "0.19" }
 bevy_asset_loader = { version = "0.20.0" }
-
-
-[profile.release]
-debug = true
+seldom_state = "0.10"
+serde_json = "=1.0.114"
+thiserror = "1.0.57"
+fake = "2.9.2"
+fakeit = "1.2.0"

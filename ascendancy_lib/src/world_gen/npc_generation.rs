@@ -1,29 +1,36 @@
+use crate::player_interactions::selection::UpdateSelectedItemEvent;
+use crate::GameState;
 use crate::{
-    loading::loading::TextureAssets, solar_system::attributes::SystemAttributes, units::{
+    agent::{
         agent::Agent,
         fly_to_system_action::{
             FlyToSystem,
             //fly_to_system, jump_stargate_system, move_to_stargate_system,
             WantToFlyToSystem,
         },
-        wandering_action::{Wander, WantToWander},
-    }
+        idle::{Idle, WantToWander},
+    },
+    loading::loading::TextureAssets,
+    solar_system::attributes::SystemAttributes,
 };
 use bevy::prelude::*;
-use big_brain::{prelude::Highest, thinker::Thinker};
+use bevy_mod_picking::events::{Down, Pointer};
+use bevy_mod_picking::prelude::On;
+use bevy_mod_picking::PickableBundle;
+use big_brain::prelude::*;
+use fakeit::name;
 use rand::seq::SliceRandom;
 use rand::Rng;
-use crate::GameState;
 
 /// The number of agents to spawn
-const AGENTS_TO_SPAWN: u32 = 50000;
+const AGENTS_TO_SPAWN: u32 = 5000;
 
 /// Spawns a new agents `AGENTS_TO_SPAWN` number of times
 pub fn spawn_agent(
     mut commands: Commands,
     query: Query<(Entity, &SystemAttributes, &Transform)>,
     mut state: ResMut<NextState<GameState>>,
-    textures: Res<TextureAssets>
+    textures: Res<TextureAssets>,
 ) {
     // Build the thinker
 
@@ -35,17 +42,29 @@ pub fn spawn_agent(
 
     // Choose a random solar system and its position
     for _ in 0..AGENTS_TO_SPAWN {
+        //let find_and_execute_trade = Steps::build()
+        //.label("FindAndExecuteTrade")
+        //// ...move to the water source...
+        //.step(FindTrade)
+        //.step(FlyToTarget)
+        //.step(ExecuteTrade);
+
         let thinker = Thinker::build()
             .label("WandererThinker")
             .picker(Highest {})
-            .when(WantToWander, Wander { target: None }) // Always wander as we have set the score high.
+            .when(WantToWander, Idle { target: None }) // Always wander as we have set the score high.
             .when(
                 WantToFlyToSystem,
                 FlyToSystem {
                     target: None,
                     desire: 0.0,
-                },
-            );
+                }
+            )
+            //.when(
+            //    WantToTrade,
+            //    find_and_execute_trade
+            //)
+            ;
 
         if let Some((_, solar_system, position)) = systems_with_positions.choose(&mut rng) {
             let mut spawn_position =
@@ -62,14 +81,16 @@ pub fn spawn_agent(
                         },
                         ..Default::default()
                     },
-                    Agent::new(0, String::from("Trader"), (*solar_system).clone()),
-                    Wander::new(),
+                    PickableBundle::default(),
+                    On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>(),
+                    Agent::new(0, String::from(name::full()), (*solar_system).clone()),
+                    Idle::new(),
                     FlyToSystem {
                         target: None,
                         desire: 1.0,
                     },
                     thinker,
-                    Name::new("Trader"),
+                    Name::new("Agent"),
                 ))
                 .id();
             // Assuming the Agent component has an `id` field that you want to update
@@ -79,7 +100,6 @@ pub fn spawn_agent(
     }
 
     state.set(GameState::Playing);
-
 }
 
 /// Returns a random position in the system.

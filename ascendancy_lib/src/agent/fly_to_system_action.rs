@@ -1,4 +1,6 @@
-use crate::solar_system::{attributes::SystemAttributes, gates::SystemGate};
+use crate::solar_system::attributes::SystemAttributes;
+
+use crate::structures::stargate::Stargate;
 use bevy::prelude::*;
 use big_brain::prelude::*;
 
@@ -50,12 +52,11 @@ pub fn fly_to_system(
     mut action_query: Query<(&Actor, &mut ActionState, &ActionSpan), With<FlyToSystem>>,
     mut fly_to_system_query: Query<(&mut Agent, &mut FlyToSystem, &mut Transform)>,
     system_graph: Res<SystemGraph>,
-    star_gates: Query<(&SystemGate, &Transform), Without<FlyToSystem>>,
+    star_gates: Query<(&Stargate, &Transform), Without<FlyToSystem>>,
     solar_systems: Query<(&SystemAttributes, &Transform), Without<Agent>>,
 ) {
     for (actor, mut action_state, span) in &mut action_query {
         let _guard = span.span().enter();
-
         match *action_state {
             ActionState::Requested => {
                 let (mut agent, _, _) = fly_to_system_query.get_mut(actor.0).unwrap();

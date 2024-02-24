@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
+use self::selection::{listen_for_clicked_event, UpdateSelectedItemEvent};
 use leafwing_input_manager::Actionlike;
-use self::selection::{listen_for_clicked_event, UpdateSelectedItems};
 
 pub(crate) mod camera;
 /// solar system selection module
@@ -14,7 +14,7 @@ pub struct InteractionPlugin;
 impl Plugin for InteractionPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
-            .add_event::<UpdateSelectedItems>()
+            .add_event::<UpdateSelectedItemEvent>()
             .init_resource::<ActionState<PlayerAction>>()
             .insert_resource(PlayerAction::default_input_map())
             .insert_resource(selection::Selection::new())
@@ -73,7 +73,9 @@ impl PlayerAction {
             Self::TogglePause => UserInput::Single(InputKind::PhysicalKey(KeyCode::Space)),
             Self::Deselect => UserInput::Single(InputKind::Mouse(MouseButton::Right)),
             Self::SelectStructure => UserInput::Single(InputKind::PhysicalKey(KeyCode::Digit1)),
-            Self::CenterCameraOnSelection => UserInput::Single(InputKind::PhysicalKey(KeyCode::KeyL)),
+            Self::CenterCameraOnSelection => {
+                UserInput::Single(InputKind::PhysicalKey(KeyCode::KeyL))
+            }
             Self::DragCamera => UserInput::Single(InputKind::Mouse(MouseButton::Middle)),
             Self::Pan => UserInput::Single(InputKind::DualAxis(DualAxis::mouse_motion())),
             // Plus and Equals are swapped. See:
@@ -91,20 +93,29 @@ impl PlayerAction {
     /// The default key bindings
     fn default_input_map() -> InputMap<PlayerAction> {
         let mut input_map = InputMap::default();
-    
+
         input_map.insert(Self::Select, Self::Select.kbm_binding());
         input_map.insert(Self::TogglePause, Self::TogglePause.kbm_binding());
         input_map.insert(Self::Deselect, Self::Deselect.kbm_binding());
         input_map.insert(Self::SelectStructure, Self::SelectStructure.kbm_binding());
-        input_map.insert(Self::CenterCameraOnSelection, Self::CenterCameraOnSelection.kbm_binding());
+        input_map.insert(
+            Self::CenterCameraOnSelection,
+            Self::CenterCameraOnSelection.kbm_binding(),
+        );
         input_map.insert(Self::DragCamera, Self::DragCamera.kbm_binding());
         input_map.insert(Self::Pan, Self::Pan.kbm_binding());
         input_map.insert(Self::Zoom, Self::Zoom.kbm_binding());
         input_map.insert(Self::ZoomIn, Self::ZoomIn.kbm_binding());
         input_map.insert(Self::ZoomOut, Self::ZoomOut.kbm_binding());
         input_map.insert(Self::RotateCameraLeft, Self::RotateCameraLeft.kbm_binding());
-        input_map.insert(Self::RotateCameraRight, Self::RotateCameraRight.kbm_binding());
-        input_map.insert(Self::ResetCameraPosition, Self::ResetCameraPosition.kbm_binding());
+        input_map.insert(
+            Self::RotateCameraRight,
+            Self::RotateCameraRight.kbm_binding(),
+        );
+        input_map.insert(
+            Self::ResetCameraPosition,
+            Self::ResetCameraPosition.kbm_binding(),
+        );
         // Return the input_map
         input_map
     }

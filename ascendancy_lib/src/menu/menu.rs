@@ -1,6 +1,6 @@
+use crate::loading::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
-use crate::loading::loading::TextureAssets;
 
 /// Menu Plugin
 pub struct MenuPlugin;
@@ -10,7 +10,10 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Menu), crate::menu::menu::setup_menu)
-            .add_systems(Update, crate::menu::menu::click_play_button.run_if(in_state(GameState::Menu)))
+            .add_systems(
+                Update,
+                crate::menu::menu::click_play_button.run_if(in_state(GameState::Menu)),
+            )
             .add_systems(OnExit(GameState::Menu), crate::menu::menu::cleanup_menu);
     }
 }
@@ -30,11 +33,12 @@ impl Default for ButtonColors {
     }
 }
 
+/// menu struct
 #[derive(Component)]
 struct Menu;
 
 ///Setup the menu
-pub fn setup_menu(mut commands: Commands, textures: Res<TextureAssets>) {
+fn setup_menu(mut commands: Commands, textures: Res<TextureAssets>) {
     info!("menu");
 
     //commands.spawn(Camera2dBundle::default());
@@ -69,7 +73,6 @@ pub fn setup_menu(mut commands: Commands, textures: Res<TextureAssets>) {
                         ..Default::default()
                     },
                     button_colors,
-                    ChangeState(GameState::Playing),
                 ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
@@ -117,7 +120,6 @@ pub fn setup_menu(mut commands: Commands, textures: Res<TextureAssets>) {
                         normal: Color::NONE,
                         ..default()
                     },
-                    OpenLink("https://bevyengine.org"),
                 ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
@@ -155,7 +157,6 @@ pub fn setup_menu(mut commands: Commands, textures: Res<TextureAssets>) {
                         normal: Color::NONE,
                         hovered: Color::rgb(0.25, 0.25, 0.25),
                     },
-                    OpenLink("https://github.com/NiklasEi/bevy_game_template"),
                 ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
@@ -178,37 +179,19 @@ pub fn setup_menu(mut commands: Commands, textures: Res<TextureAssets>) {
         });
 }
 
-#[derive(Component)]
-struct ChangeState(GameState);
-
-#[derive(Component)]
-struct OpenLink(&'static str);
-
 /// Start the game by clicking play button
-pub fn click_play_button(
+fn click_play_button(
     mut next_state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
-        (
-            &Interaction,
-            &mut BackgroundColor,
-            &ButtonColors,
-            Option<&ChangeState>,
-            Option<&OpenLink>,
-        ),
+        (&Interaction, &mut BackgroundColor, &ButtonColors),
         (Changed<Interaction>, With<Button>),
     >,
 ) {
-    for (interaction, mut color, button_colors, change_state, open_link) in &mut interaction_query {
+    for (interaction, mut color, button_colors) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
-                if let Some(_state) = change_state {
-                    next_state.set(GameState::WorldGenerating);
-                    info!("Changing state to {:?}", GameState::WorldGenPreGenerate);
-                } else if let Some(link) = open_link {
-                    if let Err(error) = webbrowser::open(link.0) {
-                        warn!("Failed to open link {error:?}");
-                    }
-                }
+                next_state.set(GameState::WorldGenerating);
+                info!("Changing state to {:?}", GameState::WorldGenPreGenerate);
             }
             Interaction::Hovered => {
                 *color = button_colors.hovered.into();
@@ -221,7 +204,7 @@ pub fn click_play_button(
 }
 
 ///Despawn the menu assets
-pub fn cleanup_menu(mut commands: Commands, menu: Query<Entity, With<Menu>>) {
+fn cleanup_menu(mut commands: Commands, menu: Query<Entity, With<Menu>>) {
     for entity in menu.iter() {
         commands.entity(entity).despawn_recursive();
     }

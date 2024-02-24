@@ -1,5 +1,6 @@
+use crate::player_interactions::selection::Selection;
 use crate::solar_system::attributes::SystemAttributes;
-use crate::solar_system::gates::SystemGate;
+use crate::structures::stargate::Stargate;
 use bevy::prelude::*;
 use petgraph::algo::astar;
 use petgraph::graph::{EdgeIndex, Graph, NodeIndex};
@@ -10,7 +11,7 @@ use std::collections::HashMap;
 #[derive(Resource, Default)]
 pub struct SystemGraph {
     /// The graph of solar systems and their connections
-    graph: Graph<SystemAttributes, SystemGate>,
+    graph: Graph<SystemAttributes, Stargate>,
     /// A mapping from a system id to a node index
     system_to_node: HashMap<u16, NodeIndex>, // mapping from SystemAttributes id to NodeIndex
 }
@@ -28,7 +29,7 @@ impl SystemGraph {
     /// Create a new `SystemGraph`
     pub fn new() -> Self {
         Self {
-            graph: Graph::<SystemAttributes, SystemGate>::new(),
+            graph: Graph::<SystemAttributes, Stargate>::new(),
             system_to_node: HashMap::new(),
         }
     }
@@ -46,7 +47,7 @@ impl SystemGraph {
         &mut self,
         system_a: NodeIndex,
         system_b: NodeIndex,
-        gate: SystemGate,
+        gate: Stargate,
     ) -> EdgeIndex {
         self.graph.add_edge(system_a, system_b, gate)
     }
@@ -56,7 +57,7 @@ impl SystemGraph {
         &self,
         system_a: NodeIndex,
         system_b: NodeIndex,
-    ) -> Result<Vec<SystemGate>, GraphError> {
+    ) -> Result<Vec<Stargate>, GraphError> {
         match astar(
             &self.graph,
             system_a,
@@ -65,11 +66,11 @@ impl SystemGraph {
             |_| 0,
         ) {
             Some((_, path_nodes)) => {
-                // Convert path of NodeIndices to a path of SystemGates
+                // Convert path of NodeIndices to a path of Stargates
                 let mut path_gates = Vec::new();
                 for i in 0..(path_nodes.len() - 1) {
                     if let Some(edge) = self.graph.find_edge(path_nodes[i], path_nodes[i + 1]) {
-                        let gate = *self.graph.edge_weight(edge).unwrap();
+                        let gate = self.graph.edge_weight(edge).unwrap().clone(); // Clone the Stargate object
                         path_gates.push(gate);
                     }
                 }
@@ -84,7 +85,7 @@ impl SystemGraph {
         &self,
         system_a: &SystemAttributes,
         system_b: &SystemAttributes,
-    ) -> Result<Vec<SystemGate>, GraphError> {
+    ) -> Result<Vec<Stargate>, GraphError> {
         let start_index = self
             .system_to_node
             .get(&system_a.id)
@@ -102,7 +103,7 @@ impl SystemGraph {
     pub fn get_pathfinding_to_random_system(
         &self,
         system_a: &SystemAttributes,
-    ) -> Result<Vec<SystemGate>, GraphError> {
+    ) -> Result<Vec<Stargate>, GraphError> {
         let start_index = self
             .system_to_node
             .get(&system_a.id)
@@ -165,6 +166,48 @@ impl SystemGraph {
     }
 }
 
+/// get a path between two selected Systems
+pub fn get_Stargate_path_between_systems(
+    selected_systems: Res<Selection>,
+    gizmos: Gizmos,
+    system_graph: Res<SystemGraph>,
+    star_gates: Query<(&Stargate, &GlobalTransform)>,
+) {
+    if selected_systems.count() != 2 {
+        return;
+    }
+
+    if selected_systems.count() > 2 {
+        return;
+    }
+
+    let system_a = selected_systems.get(0).unwrap();
+    let system_b = selected_systems.get(1).unwrap();
+
+    let path = system_graph.get_pathfinding_between(&system_a, &system_b);
+
+    match path {
+        Ok(gates) => {
+            let previous_gate_transform: Option<GlobalTransform> = None;
+            for gate in gates {
+                let mut gate_transform: Option<GlobalTransform> = None;
+
+                for (star_gates, global_transform) in star_gates.iter() {
+                    if star_gates.id() == gate.id() {
+                        gate_transform = Some(*global_transform);
+                        break;
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            println!("Error: {:?}", e);
+        }
+    }
+
+    println!("End of path");
+}
+
 #[cfg(test)]
 mod tests {
     use crate::faction::attributes::FactionID;
@@ -199,8 +242,9 @@ mod tests {
         let node_a = graph.add_node(system_a.clone());
         let node_b = graph.add_node(system_b.clone());
 
-        let gate = SystemGate {
+        let gate = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 1, // Use the dummy function
             destination_system_id: 0,
@@ -222,8 +266,9 @@ mod tests {
         let node_a = graph.add_node(system_a.clone());
         let node_b = graph.add_node(system_b.clone());
 
-        let gate1 = SystemGate {
+        let gate1 = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 1,
             origin_system_id: 0,
@@ -231,8 +276,9 @@ mod tests {
             is_active: true,
         };
 
-        let gate2 = SystemGate {
+        let gate2 = Stargate {
             id: 1,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 0,
             origin_system_id: 1,
@@ -268,16 +314,18 @@ mod tests {
 
         // Connect each system to its previous and next one
         for i in 1..20 {
-            let gate_a_to_b = SystemGate {
+            let gate_a_to_b = Stargate {
                 id: 1,
+                name: "TestGate".to_string(),
                 distance: 1,
                 destination_gate_id: 0,   // these ID's arent correct
                 origin_system_id: 0,      // these ID's arent correct
                 destination_system_id: 1, // these ID's arent correct
                 is_active: true,
             };
-            let gate_b_to_a = SystemGate {
+            let gate_b_to_a = Stargate {
                 id: 1,
+                name: "TestGate".to_string(),
                 distance: 1,
                 destination_gate_id: 0, // Use the dummy function// These IDs aren't correct
                 origin_system_id: 1,    // These IDs aren't correct
@@ -323,8 +371,9 @@ mod tests {
         let node_a = graph.add_node(system_a);
         let node_b = graph.add_node(system_b);
 
-        let gate = SystemGate {
+        let gate = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 1, // Use the dummy function
             origin_system_id: 0,
@@ -359,16 +408,18 @@ mod tests {
         let node_a = graph.add_node(system_a);
         let node_b = graph.add_node(system_b);
 
-        let gate1 = SystemGate {
+        let gate1 = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 1,
             origin_system_id: 0,
             destination_system_id: 1,
             is_active: true,
         };
-        let gate2 = SystemGate {
+        let gate2 = Stargate {
             id: 1,
+            name: "TestGate".to_string(),
             distance: 10,
             destination_gate_id: 0,
             origin_system_id: 1,
@@ -391,16 +442,18 @@ mod tests {
         let node_a = graph.add_node(system_a.clone());
         let node_b = graph.add_node(system_b.clone());
 
-        let gate1 = SystemGate {
+        let gate1 = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 1,
             origin_system_id: 0,
             destination_system_id: 1,
             is_active: true,
         };
-        let gate2 = SystemGate {
+        let gate2 = Stargate {
             id: 1,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 0,
             origin_system_id: 1,
@@ -487,8 +540,9 @@ mod tests {
         let node_a = graph.add_node(system_a.clone());
         let node_b = graph.add_node(system_b.clone());
 
-        let gate = SystemGate {
+        let gate = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 1,
             origin_system_id: 0,
@@ -511,8 +565,9 @@ mod tests {
 
         let node_a = graph.add_node(system_a.clone());
 
-        let gate = SystemGate {
+        let gate = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 5,
             destination_gate_id: 1,
             origin_system_id: 0,
@@ -564,8 +619,9 @@ mod tests {
             let system = generate_test_system(i.try_into().unwrap(), &format!("System{}", i));
             let node = graph.add_node(system.clone());
 
-            let gate1 = SystemGate {
+            let gate1 = Stargate {
                 id: gate_id,
+                name: "TestGate".to_string(),
                 distance: 1,
                 destination_gate_id: 1,
                 origin_system_id: 0,      // These IDS aren't correct
@@ -573,8 +629,9 @@ mod tests {
                 is_active: true,
             };
             gate_id += 1;
-            let gate2 = SystemGate {
+            let gate2 = Stargate {
                 id: gate_id,
+                name: "TestGate".to_string(),
                 distance: 1,
                 destination_gate_id: 1,
                 origin_system_id: 1,      // These ID's aren't correct

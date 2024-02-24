@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_mod_picking::{
-    prelude::{Down, ListenerInput, Pointer},
+    prelude::{Down, ListenerInput, On, Pointer},
     selection::PickSelection,
 };
 
@@ -68,6 +68,7 @@ pub fn listen_for_clicked_event(
     mut query: Query<(&PickSelection, &SystemAttributes), Changed<PickSelection>>,
 ) {
     for (pick_selection, system_attributes) in query.iter_mut() {
+        On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>();
         if pick_selection.is_selected {
             selection.set(system_attributes.clone());
         } else {
@@ -78,22 +79,19 @@ pub fn listen_for_clicked_event(
 
 /// An event that is triggered when the user clicks on an entity.
 #[derive(Event, Debug)]
-pub struct UpdateSelectedItems(Entity, f32);
+pub struct UpdateSelectedItemEvent(pub Entity);
 
-impl From<ListenerInput<Pointer<Down>>> for UpdateSelectedItems {
+impl From<ListenerInput<Pointer<Down>>> for UpdateSelectedItemEvent {
     fn from(event: ListenerInput<Pointer<Down>>) -> Self {
-        let update_selected_items = UpdateSelectedItems(event.target, event.hit.depth);
-        update_selected_items.debug();
+        let update_selected_items = UpdateSelectedItemEvent(event.target);
+        println!("UpdateSelectedItems: Entity: {:?}", update_selected_items.0);
         update_selected_items
     }
 }
 
-
-impl UpdateSelectedItems {
-    
+impl UpdateSelectedItemEvent {
     /// Prints the current state of `UpdateSelectedItems` for debugging purposes.
     pub fn debug(&self) {
         println!("UpdateSelectedItems: {:?}", self);
     }
-
 }

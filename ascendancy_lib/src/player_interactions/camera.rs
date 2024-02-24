@@ -181,7 +181,7 @@ fn pan_camera(
         let scaled_speed = camera_settings.pan_speed.delta(time.delta());
 
         // Because we're moving the camera, not the object, we want to pan in the opposite direction.
-        // However, UI coordinates are inverted on the y-axis, so we need to flip y a second time.
+        // However, Ui coordinates are inverted on the y-axis, so we need to flip y a second time.
         camera_transform.translation.x -= scaled_speed * camera_pan_vector.x();
         camera_transform.translation.y += scaled_speed * camera_pan_vector.y();
     } else {

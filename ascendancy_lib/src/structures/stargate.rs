@@ -1,29 +1,30 @@
 use bevy::prelude::*;
 
-/// System Gates
-#[derive(Component, Reflect, Clone, Copy, Debug, PartialEq, PartialOrd)]
+/// A stargate is a device within the game world that allows agents to travel between solar systems.
+#[derive(Component, Reflect, Clone, Debug, PartialEq, PartialOrd, Hash, Eq)]
 #[reflect(Component)]
-pub struct SystemGate {
-    /// The ID of the gate
-    pub id: u16, // or String, or other type of unique identifier
+pub struct Stargate {
+    /// Stargate ID
+    pub id: u32,
+    /// The name of the star gate
+    pub name: String,
     /// The distance from the gate to the destination
     pub distance: u32,
     /// The destination gates id
-    pub destination_gate_id: u16,
-
+    pub destination_gate_id: u32,
     /// The Solar system this gate is in (the source)
     pub origin_system_id: u16,
-
     /// The destination solar system id
     pub destination_system_id: u16,
     /// Whether the gate is active or not
     pub is_active: bool,
 }
 
-impl Default for SystemGate {
+impl Default for Stargate {
     fn default() -> Self {
         Self {
             id: 0,
+            name: String::from("Abandoned Star Gate"),
             distance: 0,
             destination_gate_id: 0,
             origin_system_id: 0,
@@ -33,21 +34,30 @@ impl Default for SystemGate {
     }
 }
 
-impl SystemGate {
-    /// Create a new system gate
-    pub fn new_placeholder() -> Self {
-        Self {
-            id: 0,
-            distance: 0,
-            destination_gate_id: 0,
-            origin_system_id: 0,
-            destination_system_id: 0,
-            is_active: true,
+impl Stargate {
+    /// Creates a new stargate with the given ID and name.
+    pub fn new(
+        id: u32,
+        name: String,
+        distance: u32,
+        destination_gate_id: u32,
+        origin_system_id: u16,
+        destination_system_id: u16,
+        is_active: bool,
+    ) -> Self {
+        Stargate {
+            id,
+            name,
+            distance,
+            destination_gate_id,
+            origin_system_id,
+            destination_system_id,
+            is_active,
         }
     }
 
     /// Get the stargate id
-    pub fn id(&self) -> u16 {
+    pub fn id(&self) -> u32 {
         self.id
     }
 
@@ -72,7 +82,7 @@ impl SystemGate {
     }
 
     /// Set a `SystemGate` destination
-    pub fn set_destination_gate_id(&mut self, destination: u16) {
+    pub fn set_destination_gate_id(&mut self, destination: u32) {
         self.destination_gate_id = destination;
     }
 
@@ -100,12 +110,11 @@ impl SystemGate {
 /// Vec of `SystemGates`
 #[derive(Component, Default, Reflect, Clone, Debug, PartialEq, PartialOrd)]
 #[reflect(Component)]
-pub struct JumpGates(pub Vec<SystemGate>);
+pub struct JumpGates(pub Vec<Stargate>);
 
 impl JumpGates {
     /// add a gate to the system
-
-    pub fn add_gate(&mut self, gate: SystemGate) {
+    pub fn add_gate(&mut self, gate: Stargate) {
         self.0.push(gate);
     }
 }

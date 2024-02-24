@@ -2,13 +2,13 @@ use bevy::prelude::*;
 use bevy::utils::Uuid;
 
 use self::attributes::SystemAttributes;
-use self::gates::JumpGates;
 use crate::faction::attributes::FactionID;
+use crate::structures::stargate::JumpGates;
+use crate::structures::stargate::Stargate;
 
 /// Solar system attributes
 pub mod attributes;
 /// System Gates
-pub mod gates;
 
 /// Set the game state to align systems with their respective runtimes
 pub struct SolarSystemPlugin;
@@ -17,7 +17,7 @@ impl Plugin for SolarSystemPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<SystemAttributes>()
             .register_type::<JumpGates>()
-            .register_type::<gates::SystemGate>()
+            .register_type::<Stargate>()
             .register_type::<Uuid>();
     }
 }
@@ -56,18 +56,20 @@ impl SolarSystem {
     }
 
     /// Add a jumpgate to the system
-    pub fn add_jumpgate(&mut self, jumpgate: gates::SystemGate) {
+    pub fn add_jumpgate(&mut self, jumpgate: Stargate) {
         self.jumpgates.0.push(jumpgate);
     }
 
     /// Remove a jumpgate from the system
-    pub fn remove_jumpgate(&mut self, jumpgate: gates::SystemGate) {
+    pub fn remove_jumpgate(&mut self, jumpgate: Stargate) {
         self.jumpgates.0.retain(|x| *x != jumpgate);
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::agent::agent::StargatePath;
+
     use super::*;
 
     #[test]
@@ -95,8 +97,9 @@ mod tests {
     #[test]
     fn test_add_jumpgate() {
         let mut system = SolarSystem::new_placeholder();
-        let gate = gates::SystemGate {
+        let gate = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 0,
             destination_gate_id: 0,
             origin_system_id: 0,
@@ -110,8 +113,9 @@ mod tests {
     #[test]
     fn test_remove_jumpgate() {
         let mut system = SolarSystem::new_placeholder();
-        let gate = gates::SystemGate {
+        let gate = Stargate {
             id: 0,
+            name: "TestGate".to_string(),
             distance: 0,
             destination_gate_id: 0,
             origin_system_id: 0,

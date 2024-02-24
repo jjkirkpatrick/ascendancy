@@ -1,8 +1,10 @@
-use crate::solar_system::{attributes::SystemAttributes, gates::SystemGate};
+use crate::solar_system::attributes::SystemAttributes;
+use crate::structures::stargate::Stargate;
+
 use bevy::prelude::*;
 
 /// Represents an agent in the game world. This is the most important component, and it should be added to all entities that represent agents.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct Agent {
     /// The unique ID of the agent.
@@ -55,13 +57,13 @@ impl Agent {
     }
 
     /// Set the path to the target system.
-    pub fn set_stargate_path(&mut self, path: Vec<SystemGate>) {
+    pub fn set_stargate_path(&mut self, path: Vec<Stargate>) {
         self.stargate_path.path = path;
     }
 }
 
 /// Represents the financial assets of an agent.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct Wallet {
     /// The amount of money the agent has.
@@ -69,7 +71,7 @@ pub struct Wallet {
 }
 
 /// Represents the agent's current goal.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub enum Goal {
     #[default]
@@ -84,7 +86,7 @@ pub enum Goal {
 }
 
 /// Represents the agent's current goal.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct CurrentGoal {
     /// The agent's current goal.
@@ -92,7 +94,7 @@ pub struct CurrentGoal {
 }
 
 /// Represents the health of the agent. This might be essential if there's any form of combat or danger in your game.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct Health {
     /// The agent's current health.
@@ -102,7 +104,7 @@ pub struct Health {
 }
 
 /// Represents the faction or group the agent belongs to.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Clone, PartialEq)]
 #[reflect(Component)]
 pub enum Faction {
     #[default]
@@ -117,7 +119,7 @@ pub enum Faction {
 }
 
 /// Represents the agent's home system.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct HomeSystem {
     /// The agent's home system.
@@ -125,7 +127,7 @@ pub struct HomeSystem {
 }
 
 /// Represents the agent's current system.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct CurrentSystem {
     /// The agent's current system.
@@ -133,7 +135,7 @@ pub struct CurrentSystem {
 }
 
 /// Represents the agent's target system.
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct TargetSystem {
     /// The agent's target system.
@@ -141,9 +143,9 @@ pub struct TargetSystem {
 }
 
 /// vec list of stargates to travel through to reach target system
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
 #[reflect(Component)]
 pub struct StargatePath {
     /// The list of stargates to travel through to reach target system.
-    pub path: Vec<SystemGate>,
+    pub path: Vec<Stargate>,
 }

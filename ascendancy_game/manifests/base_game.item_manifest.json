@@ -1,0 +1,15 @@
+{
+  "$schema": "./schema/items.schema.json",
+  "items": {
+    "raw_ore": {
+      "volume_per_unit": 1,
+      "fluid": false,
+      "category": "Natural Resource"
+    },
+    "energy_cells": {
+      "volume_per_unit": 1,
+      "fluid": false,
+      "category": "Mineral Resource"
+    }
+  }
+}
