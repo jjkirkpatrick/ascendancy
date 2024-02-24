@@ -71,9 +71,9 @@ pub fn selected_item_panel(mut commands: Commands, asset_server: Res<AssetServer
 /// Updates the UI system
 pub fn update_ui_system(
     mut ev_selected_target: EventReader<UpdateSelectedItemEvent>,
-    agents: Query<(&Agent)>,
-    stargates: Query<(&Stargate)>,
-    stations: Query<(&Station)>,
+    agents: Query<&Agent>,
+    stargates: Query<&Stargate>,
+    stations: Query<&Station>,
     mut text_query: Query<&mut Text, With<SelectedItemText>>, // Update this line
 ) {
     for event in ev_selected_target.read() {
