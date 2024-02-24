@@ -41,7 +41,7 @@ fn create_faction_resourse(mut commands: Commands) {
             faction_attributes: Attributes {
                 id: attributes::FactionID { id: 0 },
                 name: "Galactic Empire".to_string(),
-                colors: Color::rgb(0.0, 0.0, 1.0),
+                colors: Color::rgb(0.1, 0.2, 0.5),
             },
             faction_bank: bank::Bank::randomized(),
         },
@@ -49,7 +49,7 @@ fn create_faction_resourse(mut commands: Commands) {
             faction_attributes: Attributes {
                 id: attributes::FactionID { id: 1 },
                 name: "Sith".to_string(),
-                colors: Color::rgb(1.0, 0.0, 0.0),
+                colors: Color::rgb(0.9, 0.6, 0.2),
             },
             faction_bank: bank::Bank::randomized(),
         },
@@ -57,7 +57,7 @@ fn create_faction_resourse(mut commands: Commands) {
             faction_attributes: Attributes {
                 id: attributes::FactionID { id: 3 },
                 name: "FlimFlams".to_string(),
-                colors: Color::rgb(0.0, 1.0, 0.0),
+                colors: Color::rgb(0.5, 0.8, 0.2),
             },
             faction_bank: bank::Bank::randomized(),
         },

@@ -9,7 +9,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct SelectedItemText;
 /// UI panel for selected Items
-pub fn selected_item_panel(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn selected_item_panel(mut commands: Commands) {
     commands
         .spawn(NodeBundle {
             style: Style {

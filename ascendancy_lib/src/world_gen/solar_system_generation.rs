@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use bevy::math::vec2;
 use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssetUsages;
 use bevy::render::{mesh::Indices, render_resource::PrimitiveTopology};
+use bevy::utils::uuid;
 use hexx::*;
 use rand::Rng; // Bring the trait into scope
 
@@ -22,14 +24,9 @@ use crate::structures::station::Station;
 use bevy_mod_picking::prelude::*;
 
 /// World size of the hexagons (outer radius)
-const HEX_SIZE: Vec2 = Vec2::splat(512.0);
+const HEX_SIZE: f32 = 512.0;
 /// The radius of the map.
-const MAP_RADIUS: u32 = 50;
-
-/// Hex grid setup
-const COLORS: [Color; 3] = [Color::WHITE, Color::BLUE, Color::RED];
-/// The chunk size of the map.
-const CHUNK_SIZE: u32 = 1;
+const MAP_RADIUS: i32 = 10;
 
 /// The map resource.
 #[derive(Debug, Resource)]
@@ -40,79 +37,119 @@ pub struct Map {
     pub entities: HashMap<Hex, Entity>,
 }
 
+/// Struct to hold the configuration for the galaxy.
+#[derive(Resource)]
+pub struct GalaxyConfig {
+    hex_size: f32,
+    map_radius: i32,
+    proximity_threshold: i32,
+    clump_centers: Vec<Hex>,
+}
+
+impl GalaxyConfig {
+
+    pub fn default() -> Self {
+        GalaxyConfig {
+            hex_size: HEX_SIZE,
+            map_radius: MAP_RADIUS,
+            proximity_threshold: 3,
+            clump_centers: vec![Hex::new(0, 0)],
+        }
+    }
+
+
+    // A method to determine spawn chance based on hex proximity to clump centers
+    fn spawn_chance_for_hex(&self, hex: Hex) -> f64 {
+        let closest_distance_to_clump = self.clump_centers
+            .iter()
+            .map(|center| hex.distance_to(*center))
+            .min()
+            .unwrap_or(i32::MAX);
+
+        if closest_distance_to_clump <= self.proximity_threshold {
+            0.65
+        } else {
+            0.35
+        }
+    }
+}
+
 /// Creates all the solar systems in the galaxy.
 pub fn create_galaxy_solar_systems(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    config: Res<GalaxyConfig>, // Use GalaxyConfig as a resource
 ) {
     let layout = HexLayout {
-        hex_size: HEX_SIZE,
+        hex_size: vec2(config.hex_size, config.hex_size),
         ..default()
     };
 
-    info!("Creating solar systems");
+    let mesh_handle = meshes.add(hexagonal_plane(&layout));
+    let mut rng = rand::thread_rng();
 
-    let mesh = hexagonal_plane(&layout);
-    let mesh_handle = meshes.add(mesh);
-    let materials = COLORS.map(|c| materials.add(c));
-    let mut rng = rand::thread_rng(); // Create a new random number generator
-    let mut system_count = 0;
+    // Use the configuration to adjust galaxy generation logic
     let entities = Hex::ZERO
-        .spiral_range(0..=MAP_RADIUS / 2)
+        .spiral_range(0..=(config.map_radius / 2)as u32)
         .filter_map(|hex| {
             let pos = layout.hex_to_world_pos(hex);
-            let hex_mod = hex.to_lower_res(CHUNK_SIZE);
-            let color_index = (hex_mod.x - hex_mod.y).rem_euclid(3);
-            // Using filter_map to conditionally spawn entities
-            // Only spawn an entity with a 1 in 3 chance
-            if rng.gen_range(0..1) == 0 {
-                // Generate a random number between 0 and 2 (inclusive)
-                let entity_id = commands
-                    .spawn((
-                        SolarSystem {
-                            attributes: SystemAttributes {
-                                id: system_count,
-                                name: "Placeholder".to_string(),
-                                owner: FactionID { id: 0 },
-                            },
-                            jumpgates: JumpGates::default(),
-                        },
-                        PickableBundle::default(),
-                        //RaycastPickTarget::default(),
-                        On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>(),
-                        ColorMesh2dBundle {
-                            transform: Transform::from_xyz(pos.x, pos.y, -1.0)
-                                .with_scale(Vec3::splat(0.9)),
-                            mesh: mesh_handle.clone().into(),
-                            material: materials[color_index as usize].clone(),
-                            ..default()
-                        },
-                        Name::new(format!("System - {},{}", hex.x, hex.y)),
-                    ))
-                    .with_children(|b: &mut ChildBuilder| {
-                        b.spawn((Text2dBundle {
-                            text: Text::from_section(
-                                format!("{},{}", hex.x, hex.y),
-                                TextStyle {
-                                    font_size: 64.0,
-                                    color: Color::BLACK,
-                                    ..Default::default()
-                                },
-                            ),
-                            transform: Transform::from_xyz(0.0, 390.0, 10.0),
-                            ..Default::default()
-                        },));
-                    })
-                    .id();
-                system_count += 1;
-                Some((hex, entity_id))
+            let spawn_chance = config.spawn_chance_for_hex(hex);
+
+            if rng.gen_bool(spawn_chance) {
+                Some(spawn_solar_system_entity(&mut commands, &mesh_handle, pos, hex))
             } else {
                 None
             }
         })
-        .collect();
+        .collect::<HashMap<_, _>>();
+
     commands.insert_resource(Map { layout, entities });
+}
+
+/// Function to encapsulate solar system entity spawning logic.
+fn spawn_solar_system_entity(
+    commands: &mut Commands,
+    mesh_handle: &Handle<Mesh>,
+    pos: Vec2,
+    hex: Hex,
+) -> (Hex, Entity) {
+    let entity_id = commands
+        .spawn((
+            SolarSystem {
+                attributes: SystemAttributes {
+                    id: uuid::Uuid::new_v4().as_u128() as u32,
+                    name: "Placeholder".to_string(),
+                    owner: FactionID { id: 0 },
+                },
+                jumpgates: JumpGates::default(),
+            },
+            PickableBundle::default(),
+            On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>(),
+            ColorMesh2dBundle {
+                transform: Transform::from_xyz(pos.x, pos.y, -1.0)
+                    .with_scale(Vec3::splat(0.9)),
+                mesh: mesh_handle.clone().into(),
+                ..default()
+            },
+            Name::new(format!("System - {},{}", hex.x, hex.y)),
+        ))
+        .with_children(|parent| {
+            parent.spawn(Text2dBundle {
+                text: Text::from_section(
+                    format!("{},{}", hex.x, hex.y),
+                    TextStyle {
+                        font_size: 64.0,
+                        color: Color::BLACK,
+                        ..Default::default()
+                    },
+                ),
+                transform: Transform::from_xyz(0.0, 390.0, 10.0),
+                ..Default::default()
+            });
+        })
+        .id();
+    (hex, entity_id)
 }
 
 /// Spawns stargates between solar systems.
@@ -162,7 +199,7 @@ pub fn spawn_stargates(
 
             established_connections.insert((system_entity, destination_system));
 
-            let relative_stargate_position = random_stargate_position(HEX_SIZE, Vec3::ZERO);
+            let relative_stargate_position = random_stargate_position(Vec2::splat(HEX_SIZE), Vec3::ZERO);
 
             let origin_transform = Transform::from_xyz(
                 system_transform.translation.x + relative_stargate_position.x,
@@ -221,7 +258,7 @@ pub fn spawn_stargates(
                 .id();
 
             let (_, dest_system_transform, _, _) = solar_systems.get(destination_system).unwrap();
-            let relative_dest_position = random_stargate_position(HEX_SIZE, Vec3::ZERO);
+            let relative_dest_position = random_stargate_position(Vec2::splat(HEX_SIZE), Vec3::ZERO);
 
             let dest_transform = Transform::from_xyz(
                 dest_system_transform.translation.x + relative_dest_position.x,

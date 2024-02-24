@@ -1,8 +1,5 @@
 use bevy::prelude::*;
-use bevy::{
-    reflect::{Reflect},
-    utils::uuid,
-};
+use bevy::{reflect::Reflect, utils::uuid};
 
 use crate::structures::station::ResourceManager;
 
@@ -79,7 +76,7 @@ impl StationServiceTrait for Market {
         }
     }
 
-    fn run(&mut self, resources: &mut ResourceManager, time: &Res<Time>) {
+    fn run(&mut self, _: &mut ResourceManager, _: &Res<Time>) {
         if self.is_active {
         } else {
         }

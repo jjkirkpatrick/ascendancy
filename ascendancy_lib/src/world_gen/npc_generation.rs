@@ -23,7 +23,7 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 
 /// The number of agents to spawn
-const AGENTS_TO_SPAWN: u32 = 5000;
+const AGENTS_TO_SPAWN: u32 = 10000;
 
 /// Spawns a new agents `AGENTS_TO_SPAWN` number of times
 pub fn spawn_agent(

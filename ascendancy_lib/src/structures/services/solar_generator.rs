@@ -1,6 +1,5 @@
 use bevy::{prelude::*, utils::uuid};
 
-
 use crate::structures::station::ResourceManager;
 
 // structures/services/SolarGenerator.rs
@@ -50,18 +49,15 @@ impl StationServiceTrait for SolarGenerator {
         1
     }
 
-    fn enable(&mut self) {
-        
-    }
+    fn enable(&mut self) {}
 
-    fn disable(&mut self) {
-    }
+    fn disable(&mut self) {}
 
     /// Consumes energy
     fn consume_energy(&mut self, resources: &mut ResourceManager, time: &Res<Time>) -> bool {
         self.production_timer.tick(time.delta());
         if self.production_timer.finished() {
-            true
+            resources.consume_energy(0.)
         } else {
             false
         }

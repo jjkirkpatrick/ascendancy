@@ -13,9 +13,9 @@ pub struct Stargate {
     /// The destination gates id
     pub destination_gate_id: u32,
     /// The Solar system this gate is in (the source)
-    pub origin_system_id: u16,
+    pub origin_system_id: u32,
     /// The destination solar system id
-    pub destination_system_id: u16,
+    pub destination_system_id: u32,
     /// Whether the gate is active or not
     pub is_active: bool,
 }
@@ -41,8 +41,8 @@ impl Stargate {
         name: String,
         distance: u32,
         destination_gate_id: u32,
-        origin_system_id: u16,
-        destination_system_id: u16,
+        origin_system_id: u32,
+        destination_system_id: u32,
         is_active: bool,
     ) -> Self {
         Stargate {
@@ -87,22 +87,22 @@ impl Stargate {
     }
 
     /// Set a `SystemGate` origin
-    pub fn set_origin_system_id(&mut self, origin: u16) {
+    pub fn set_origin_system_id(&mut self, origin: u32) {
         self.origin_system_id = origin;
     }
 
     /// Set a `SystemGate` destination
-    pub fn set_destination_system_id(&mut self, destination: u16) {
+    pub fn set_destination_system_id(&mut self, destination: u32) {
         self.destination_system_id = destination;
     }
 
     /// Get the ID of the origin system
-    pub fn origin_system_id(&self) -> u16 {
+    pub fn origin_system_id(&self) -> u32 {
         self.origin_system_id
     }
 
     /// Get the Gates system destination
-    pub fn destination_system_id(&self) -> u16 {
+    pub fn destination_system_id(&self) -> u32 {
         self.destination_system_id
     }
 }

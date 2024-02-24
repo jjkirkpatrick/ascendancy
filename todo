@@ -2,8 +2,13 @@
 - - Services such as:
     Manufacturoing
     Market, 
+        Able to create buy orders
+        Able to create Sell orders
+        Able to handle a trade 
     Docking
+        Allow ships to dock in station, required before interaction with other services allowed 
     Repair 
+        Allow repair of ship - once docked
 
     All services should use events when possible i.e when a ship is repaired, a repair event is fired, when a ship is docked, a docking event is fired.
     Stations should have service slots, and a service slot should be able to be occupied by a service. services should be able to be added and removed from a service slot.
@@ -14,3 +19,9 @@
     Add a UI for currently selected Item
         UI should a specific set of data based on the type of item selected
         i.e if a ship is selected, the UI should show the ships stats, and the ships current cargo
+
+
+
+
+
+    

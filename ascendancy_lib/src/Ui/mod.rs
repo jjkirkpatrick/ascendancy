@@ -1,6 +1,6 @@
 use crate::player_interactions::selection::UpdateSelectedItemEvent;
+use crate::ui::selected_panel::selected_item_panel;
 use crate::GameState;
-use crate::Ui::selected_panel::selected_item_panel;
 use bevy::app::{App, Plugin, Update};
 use bevy::ecs::schedule::common_conditions::on_event;
 use bevy::ecs::schedule::IntoSystemConfigs;

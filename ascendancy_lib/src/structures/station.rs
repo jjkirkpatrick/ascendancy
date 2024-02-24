@@ -1,5 +1,5 @@
 use crate::structures::services::{StationServiceTrait, StationServices};
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use std::fmt;
 
 /// A station is a location within the game world that provides services to agents.
@@ -11,7 +11,7 @@ pub struct Station {
     /// The name of the station
     pub name: String,
     /// The solar system this station is in
-    pub system_id: u16,
+    pub system_id: u32,
     /// The resource manager for the station
     pub resource_manager: ResourceManager,
     /// The services provided by the station
@@ -30,7 +30,8 @@ pub struct ResourceManager {
 }
 
 impl ResourceManager {
-    fn consume_energy(&mut self, amount: f32) -> bool {
+    /// Consumes energy
+    pub fn consume_energy(&mut self, amount: f32) -> bool {
         if self.energy >= amount {
             self.energy -= amount;
             true
@@ -39,7 +40,8 @@ impl ResourceManager {
         }
     }
 
-    fn produce_energy(&mut self, amount: f32) {
+    /// Produces energy
+    pub fn produce_energy(&mut self, amount: f32) {
         self.energy += amount;
     }
 
@@ -48,7 +50,7 @@ impl ResourceManager {
 
 impl Station {
     /// Creates a new station with the given ID and name.
-    pub fn new(id: u32, name: String, system_id: u16) -> Self {
+    pub fn new(id: u32, name: String, system_id: u32) -> Self {
         Station {
             id,
             name,

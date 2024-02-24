@@ -7,7 +7,7 @@ use crate::faction::attributes::FactionID;
 #[reflect(Component)]
 pub struct SystemAttributes {
     /// The ID of the system
-    pub id: u16,
+    pub id: u32,
     /// The Name of the system
     pub name: String,
     /// The faction that owns the system

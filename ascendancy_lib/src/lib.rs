@@ -3,25 +3,20 @@
 #![deny(clippy::missing_docs_in_private_items)]
 #![forbid(unsafe_code)]
 #![warn(clippy::doc_markdown)]
+#![warn(unused_extern_crates)]
 // Often exceeded by queries
 #![allow(clippy::type_complexity)]
 
 use bevy::prelude::*;
 
-/// Ui
-pub mod Ui;
 /// Units module
 pub mod agent;
-/// Asset management module
-pub mod asset_management;
 /// Enum iterator module
 pub mod enum_iter;
 /// Faction module
 pub mod faction;
 /// Graphics module
 pub mod graphics;
-/// Items module
-pub mod items;
 ///Asset loading
 pub mod loading;
 /// Menu manager
@@ -32,6 +27,8 @@ pub mod player_interactions;
 pub mod solar_system;
 /// structures
 pub mod structures;
+/// ii
+pub mod ui;
 /// world generation module
 pub mod world_gen;
 /// define game states

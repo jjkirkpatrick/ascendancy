@@ -6,7 +6,7 @@ use crate::world_gen::npc_generation::spawn_agent;
 use crate::world_gen::solar_system_generation::{create_galaxy_solar_systems, spawn_stargates};
 use crate::GameState;
 
-use self::solar_system_generation::spawn_space_station;
+use self::solar_system_generation::{spawn_space_station, GalaxyConfig};
 /// Set the game state to align systems with their respective runtimes
 pub struct WorldGenPlugin;
 
@@ -21,7 +21,9 @@ pub(crate) mod solar_system_generation;
 
 impl Plugin for WorldGenPlugin {
     fn build(&self, app: &mut App) {
-        app.init_state::<GameState>().add_systems(
+        app.init_state::<GameState>()
+        .insert_resource(GalaxyConfig::default())
+        .add_systems(
             OnEnter(GameState::WorldGenerating),
             (
                 create_galaxy_solar_systems,

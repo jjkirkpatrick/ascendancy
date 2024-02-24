@@ -1,8 +1,5 @@
 use bevy::prelude::*;
-use bevy::{
-    reflect::{Reflect},
-    utils::uuid,
-};
+use bevy::{reflect::Reflect, utils::uuid};
 
 use crate::{agent::agent::Agent, structures::station::ResourceManager};
 
@@ -69,7 +66,6 @@ impl StationServiceTrait for Dock {
         self.consumption_timer.tick(time.delta());
 
         if self.consumption_timer.finished() {
-
             let energy_consumption_per_ship =
                 self.base_energy_consumption * (1.0 + self.energy_fluctuation);
             let total_energy_consumption =
@@ -91,7 +87,7 @@ impl StationServiceTrait for Dock {
         false
     }
 
-    fn run(&mut self, resources: &mut ResourceManager, time: &Res<Time>) {
+    fn run(&mut self, _: &mut ResourceManager, _: &Res<Time>) {
         if self.is_active {
         } else {
         }

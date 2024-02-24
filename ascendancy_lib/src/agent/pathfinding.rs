@@ -13,7 +13,7 @@ pub struct SystemGraph {
     /// The graph of solar systems and their connections
     graph: Graph<SystemAttributes, Stargate>,
     /// A mapping from a system id to a node index
-    system_to_node: HashMap<u16, NodeIndex>, // mapping from SystemAttributes id to NodeIndex
+    system_to_node: HashMap<u32, NodeIndex>, // mapping from SystemAttributes id to NodeIndex
 }
 
 /// Errors that can occur when using the `SystemGraph`
@@ -149,14 +149,14 @@ impl SystemGraph {
     }
 
     /// Get a system by its id
-    pub fn system_by_id(&self, id: &u16) -> Option<&SystemAttributes> {
+    pub fn system_by_id(&self, id: &u32) -> Option<&SystemAttributes> {
         self.system_to_node
             .get(id)
             .and_then(|index| self.graph.node_weight(*index))
     }
 
     /// Get the `NodeIndex` of a system by its id
-    pub fn node_by_id(&self, id: &u16) -> Option<&NodeIndex> {
+    pub fn node_by_id(&self, id: &u32) -> Option<&NodeIndex> {
         self.system_to_node.get(id)
     }
 
@@ -167,9 +167,8 @@ impl SystemGraph {
 }
 
 /// get a path between two selected Systems
-pub fn get_Stargate_path_between_systems(
+pub fn get_stargate_path_between_systems(
     selected_systems: Res<Selection>,
-    gizmos: Gizmos,
     system_graph: Res<SystemGraph>,
     star_gates: Query<(&Stargate, &GlobalTransform)>,
 ) {
@@ -188,7 +187,6 @@ pub fn get_Stargate_path_between_systems(
 
     match path {
         Ok(gates) => {
-            let previous_gate_transform: Option<GlobalTransform> = None;
             for gate in gates {
                 let mut gate_transform: Option<GlobalTransform> = None;
 
@@ -197,6 +195,12 @@ pub fn get_Stargate_path_between_systems(
                         gate_transform = Some(*global_transform);
                         break;
                     }
+                }
+
+                // Use gate_transform here
+                if let Some(transform) = gate_transform {
+                    // Do something with transform
+                    println!("Gate transform: {:?}", transform);
                 }
             }
         }
@@ -215,7 +219,7 @@ mod tests {
 
     use super::*;
 
-    fn generate_test_system(id: u16, name: &str) -> SystemAttributes {
+    fn generate_test_system(id: u32, name: &str) -> SystemAttributes {
         SystemAttributes {
             id: id,
             name: name.to_string(),

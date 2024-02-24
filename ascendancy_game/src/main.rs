@@ -1,6 +1,6 @@
 //! Everything needed to run the main game logic
 
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResolution};
 use bevy::window::PresentMode;
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -16,24 +16,19 @@ fn main() {
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: String::from("Ascendancy"),
+                    resolution: (1920., 1080.).into(),
                     present_mode: PresentMode::AutoVsync,
                     ..default()
                 }),
                 ..default()
-            }), //.set(LogPlugin {
-                //    // Use `RUST_LOG=big_brain=trace,thirst=trace cargo run --example thirst --features=trace` to see extra tracing output.
-                //    filter: "big_brain=debug,sequence=debug".to_string(),
-                //    ..default()
-                //}),
+            }), 
         )
         .add_plugins((
             DefaultPickingPlugins,
-            WorldInspectorPlugin::new(),
-            //ScreenDiagnosticsPlugin::default(),
-            //ScreenFrameDiagnosticsPlugin,
-            //ascendancy_lib::debug::DebugPlugin,
-            ascendancy_lib::Ui::UiPlugin,
-            ascendancy_lib::asset_management::AssetManagementPlugin,
+           // WorldInspectorPlugin::new(),
+            ScreenDiagnosticsPlugin::default(),
+            ScreenFrameDiagnosticsPlugin,
+            ascendancy_lib::ui::UiPlugin,
             ascendancy_lib::loading::loading::LoadingPlugin,
             ascendancy_lib::menu::menu::MenuPlugin,
             ascendancy_lib::player_interactions::InteractionPlugin,

@@ -39,8 +39,6 @@ pub fn idle_action_system(
     mut action_query: Query<(&Actor, &mut ActionState, &mut Idle, &ActionSpan)>,
     mut fly_to_system_query: Query<(&Agent, &mut FlyToSystem), Without<Actor>>,
 ) {
-    let rng = rand::thread_rng();
-
     for (actor, mut action_state, mut idle, span) in &mut action_query {
         let _guard = span.span().enter();
         let mut agent = agent_query.get_mut(actor.0).unwrap();
