@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::solar_system::attributes::SystemAttributes;
+use crate::solar_system::SolarSystem;
 
 use super::attributes::Attributes;
 
@@ -8,12 +8,12 @@ use super::attributes::Attributes;
 pub fn owner_changed_system(
     mut commands: Commands,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    solar_system: Query<(Entity, &SystemAttributes), Changed<SystemAttributes>>,
+    solar_system: Query<(Entity, &SolarSystem), Changed<SolarSystem>>,
     factions: Query<(Entity, &Attributes)>,
 ) {
-    for (entity, owner) in solar_system.iter() {
+    for (entity, system) in solar_system.iter() {
         for (_, faction) in factions.iter() {
-            if faction.id == owner.owner {
+            if faction.id == system.attributes.owner {
                 let material = materials.add(ColorMaterial::from(faction.colors));
                 commands.entity(entity).insert(material);
             }

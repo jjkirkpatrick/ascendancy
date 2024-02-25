@@ -61,6 +61,16 @@ impl Stargate {
         self.id
     }
 
+    /// Get the stargate name
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Set the stargate name
+    pub fn set_name(&mut self, name: String) {
+        self.name = name;
+    }
+
     /// Deactivate the gate
     pub fn deactivate(&mut self) {
         self.is_active = false;
@@ -104,17 +114,5 @@ impl Stargate {
     /// Get the Gates system destination
     pub fn destination_system_id(&self) -> u32 {
         self.destination_system_id
-    }
-}
-
-/// Vec of `SystemGates`
-#[derive(Component, Default, Reflect, Clone, Debug, PartialEq, PartialOrd)]
-#[reflect(Component)]
-pub struct JumpGates(pub Vec<Stargate>);
-
-impl JumpGates {
-    /// add a gate to the system
-    pub fn add_gate(&mut self, gate: Stargate) {
-        self.0.push(gate);
     }
 }

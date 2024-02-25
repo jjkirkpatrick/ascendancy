@@ -1,11 +1,8 @@
-use crate::{
-    solar_system::attributes::SystemAttributes,
-    world_gen::npc_generation::random_position_in_system,
-};
+use crate::solar_system::SolarSystem;
 use bevy::prelude::*;
 use big_brain::prelude::*;
 
-use super::{agent::Agent, fly_to_system_action::FlyToSystem};
+use super::{agent::Agent, fly_to_system_action::FlyToSystem, utils::random_position_in_hex};
 
 /// The maximum distance to the target before the action is considered a success.
 const MAX_DISTANCE: f32 = 0.1;
@@ -31,10 +28,31 @@ impl Default for Idle {
     }
 }
 
+fn move_towards_target(agent: &mut Transform, target: &Transform, speed: f32, time: &Res<Time>) {
+    let delta = target.translation - agent.translation;
+    let distance = delta.length();
+
+    if distance > MAX_DISTANCE {
+        let step_size = time.delta_seconds() * speed;
+        let step = delta.normalize() * step_size.min(distance);
+        agent.translation += step;
+    }
+}
+
+fn rotate_towards_target(agent: &mut Transform, target: &Transform, time: &Res<Time>) {
+    let delta = target.translation - agent.translation;
+    let angle = delta.y.atan2(delta.x);
+    let target_rotation = Quat::from_rotation_z(angle);
+    let rotation_speed = 3.0; // Define a rotation speed
+    agent.rotation = agent
+        .rotation
+        .slerp(target_rotation, rotation_speed * time.delta_seconds());
+}
+
 /// Combined system for deciding on, moving towards, and rotating towards a wander target.
 pub fn idle_action_system(
     time: Res<Time>,
-    solar_systems: Query<(Entity, &SystemAttributes, &Transform), Without<Agent>>,
+    solar_systems: Query<(Entity, &SolarSystem, &Transform), Without<Agent>>,
     mut agent_query: Query<(&Agent, &mut Transform), With<Agent>>,
     mut action_query: Query<(&Actor, &mut ActionState, &mut Idle, &ActionSpan)>,
     mut fly_to_system_query: Query<(&Agent, &mut FlyToSystem), Without<Actor>>,
@@ -46,16 +64,16 @@ pub fn idle_action_system(
         match *action_state {
             ActionState::Requested => {
                 // Determine the agent's current solar system and generate a random position within it
-                let current_system_id = agent.0.current_system.system.id; // Assuming Agent has a current_system_id field
+                let current_system_id = agent.0.current_system.attributes.id; // Assuming Agent has a current_system_id field
                 let solar_system_transform = solar_systems
                     .iter()
-                    .find(|(_, system_attributes, _)| system_attributes.id == current_system_id)
+                    .find(|(_, solar_system, _)| solar_system.attributes.id == current_system_id)
                     .map(|(_, _, transform)| transform)
                     .unwrap();
 
-                let rand_position = random_position_in_system(
+                let rand_position = random_position_in_hex(
                     Vec2::splat(512.),
-                    solar_system_transform.translation,
+                    solar_system_transform.clone().translation,
                 );
 
                 // Randomly choose between flying to a new system or wandering
@@ -78,25 +96,14 @@ pub fn idle_action_system(
                 }
             }
             ActionState::Executing => {
-                if let Some(target) = idle.target {
-                    // Movement towards the target
+                if let Some(target) = &idle.target {
+                    move_towards_target(&mut agent.1, target, agent.0.speed, &time);
+                    rotate_towards_target(&mut agent.1, target, &time);
+
                     let delta = target.translation - agent.1.translation;
                     let distance = delta.length();
 
-                    if distance > MAX_DISTANCE {
-                        let step_size = time.delta_seconds() * agent.0.speed;
-                        let step = delta.normalize() * step_size.min(distance);
-                        agent.1.translation += step;
-
-                        // Rotation towards the target
-                        let angle = delta.y.atan2(delta.x);
-                        let target_rotation = Quat::from_rotation_z(angle);
-                        let rotation_speed = 3.0; // Define a rotation speed
-                        agent.1.rotation = agent
-                            .1
-                            .rotation
-                            .slerp(target_rotation, rotation_speed * time.delta_seconds());
-                    } else {
+                    if distance <= MAX_DISTANCE {
                         if let Ok((_, mut fly_to_system)) = fly_to_system_query.get_mut(actor.0) {
                             fly_to_system.increase_desire(15.0);
                         }

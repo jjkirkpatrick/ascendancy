@@ -4,13 +4,13 @@ use bevy_mod_picking::{
     selection::PickSelection,
 };
 
-use crate::solar_system::attributes::SystemAttributes;
+use crate::solar_system::SolarSystem;
 
 /// The currently selected entity.
 #[derive(Resource)]
 pub struct Selection {
     /// The currently selected entity.
-    pub selected: Vec<SystemAttributes>,
+    pub selected: Vec<SolarSystem>,
 }
 
 impl Default for Selection {
@@ -28,12 +28,12 @@ impl Selection {
     }
 
     /// Sets the selected entity.
-    pub fn set(&mut self, entity: SystemAttributes) {
+    pub fn set(&mut self, entity: SolarSystem) {
         self.selected.push(entity);
     }
 
     /// Removes the selected entity.
-    pub fn remove(&mut self, entity: SystemAttributes) {
+    pub fn remove(&mut self, entity: SolarSystem) {
         self.selected.retain(|x| *x != entity);
     }
 
@@ -43,7 +43,7 @@ impl Selection {
     }
 
     /// Returns the selected entity.
-    pub fn get_all(&self) -> Vec<SystemAttributes> {
+    pub fn get_all(&self) -> Vec<SolarSystem> {
         self.selected.clone()
     }
 
@@ -53,7 +53,7 @@ impl Selection {
     }
 
     /// Get selection by index
-    pub fn get(&self, index: usize) -> Option<SystemAttributes> {
+    pub fn get(&self, index: usize) -> Option<SolarSystem> {
         if index < self.selected.len() {
             Some(self.selected[index].clone())
         } else {
@@ -65,14 +65,14 @@ impl Selection {
 /// Listens for the `PointerDown` event and prints the entity that was clicked.
 pub fn listen_for_clicked_event(
     mut selection: ResMut<Selection>,
-    mut query: Query<(&PickSelection, &SystemAttributes), Changed<PickSelection>>,
+    mut query: Query<(&PickSelection, &SolarSystem), Changed<PickSelection>>,
 ) {
-    for (pick_selection, system_attributes) in query.iter_mut() {
+    for (pick_selection, solar_system) in query.iter_mut() {
         On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>();
         if pick_selection.is_selected {
-            selection.set(system_attributes.clone());
+            selection.set(solar_system.clone());
         } else {
-            selection.remove(system_attributes.clone());
+            selection.remove(solar_system.clone());
         }
     }
 }

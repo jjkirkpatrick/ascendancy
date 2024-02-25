@@ -87,7 +87,7 @@ pub fn update_ui_system(
                 text.sections.push(TextSection {
                     value: format!(
                         "Agent Name: {}\nHealth: {}\nHome System: {}",
-                        agent.name, agent.health.current, agent.home_system.home.name
+                        agent.name, agent.health.current, agent.home_system.attributes.name
                     ),
                     ..default()
                 });

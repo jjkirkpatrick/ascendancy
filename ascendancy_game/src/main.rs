@@ -1,7 +1,7 @@
 //! Everything needed to run the main game logic
 
-use bevy::{prelude::*, window::WindowResolution};
 use bevy::window::PresentMode;
+use bevy::{prelude::*, window::WindowResolution};
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_mod_picking::prelude::*;
@@ -12,20 +12,18 @@ use big_brain::prelude::*;
 fn main() {
     App::new()
         .init_state::<ascendancy_lib::GameState>()
-        .add_plugins(
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: String::from("Ascendancy"),
-                    resolution: (1920., 1080.).into(),
-                    present_mode: PresentMode::AutoVsync,
-                    ..default()
-                }),
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: String::from("Ascendancy"),
+                resolution: (1920., 1080.).into(),
+                present_mode: PresentMode::AutoVsync,
                 ..default()
-            }), 
-        )
+            }),
+            ..default()
+        }))
         .add_plugins((
             DefaultPickingPlugins,
-           // WorldInspectorPlugin::new(),
+            WorldInspectorPlugin::new(),
             ScreenDiagnosticsPlugin::default(),
             ScreenFrameDiagnosticsPlugin,
             ascendancy_lib::ui::UiPlugin,

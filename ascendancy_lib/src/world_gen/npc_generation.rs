@@ -11,7 +11,7 @@ use crate::{
         idle::{Idle, WantToWander},
     },
     loading::loading::TextureAssets,
-    solar_system::attributes::SystemAttributes,
+    solar_system::SolarSystem,
 };
 use bevy::prelude::*;
 use bevy_mod_picking::events::{Down, Pointer};
@@ -23,12 +23,12 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 
 /// The number of agents to spawn
-const AGENTS_TO_SPAWN: u32 = 10000;
+const AGENTS_TO_SPAWN: u32 = 1000;
 
 /// Spawns a new agents `AGENTS_TO_SPAWN` number of times
 pub fn spawn_agent(
     mut commands: Commands,
-    query: Query<(Entity, &SystemAttributes, &Transform)>,
+    query: Query<(Entity, &SolarSystem, &Transform)>,
     mut state: ResMut<NextState<GameState>>,
     textures: Res<TextureAssets>,
 ) {
@@ -83,7 +83,7 @@ pub fn spawn_agent(
                     },
                     PickableBundle::default(),
                     On::<Pointer<Down>>::send_event::<UpdateSelectedItemEvent>(),
-                    Agent::new(0, String::from(name::full()), (*solar_system).clone()),
+                    Agent::new(0, String::from(name::full()), solar_system),
                     Idle::new(),
                     FlyToSystem {
                         target: None,

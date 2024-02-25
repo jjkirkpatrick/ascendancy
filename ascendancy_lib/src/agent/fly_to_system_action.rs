@@ -1,4 +1,4 @@
-use crate::solar_system::attributes::SystemAttributes;
+use crate::solar_system::SolarSystem;
 
 use crate::structures::stargate::Stargate;
 use bevy::prelude::*;
@@ -13,7 +13,7 @@ const DISTANCE_REQUIRED_TO_JUMP_STARGATE: f32 = 0.1;
 #[derive(Clone, Component, Debug, ActionBuilder)]
 pub struct FlyToSystem {
     /// The position to wander to.
-    pub target: Option<SystemAttributes>,
+    pub target: Option<SolarSystem>,
 
     /// The Desire to  travel to a system
     pub desire: f32,
@@ -53,14 +53,14 @@ pub fn fly_to_system(
     mut fly_to_system_query: Query<(&mut Agent, &mut FlyToSystem, &mut Transform)>,
     system_graph: Res<SystemGraph>,
     star_gates: Query<(&Stargate, &Transform), Without<FlyToSystem>>,
-    solar_systems: Query<(&SystemAttributes, &Transform), Without<Agent>>,
+    solar_systems: Query<(&SolarSystem, &Transform), Without<Agent>>,
 ) {
     for (actor, mut action_state, span) in &mut action_query {
         let _guard = span.span().enter();
         match *action_state {
             ActionState::Requested => {
                 let (mut agent, _, _) = fly_to_system_query.get_mut(actor.0).unwrap();
-                let current_system = &agent.current_system.system;
+                let current_system = &agent.current_system;
 
                 match system_graph.get_pathfinding_to_random_system(current_system) {
                     Ok(path) => {
@@ -117,10 +117,10 @@ pub fn fly_to_system(
                             transform.translation = destination_stargate_transform.translation;
 
                             // Update the agent's current system
-                            agent.current_system.system = solar_systems
+                            agent.current_system = solar_systems
                                 .iter()
                                 .find(|(system, _)| {
-                                    system.id == first_stargate.destination_system_id()
+                                    system.attributes.id == first_stargate.destination_system_id()
                                 })
                                 .map(|(system, _)| system)
                                 .unwrap()

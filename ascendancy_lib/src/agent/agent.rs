@@ -1,4 +1,5 @@
 use crate::solar_system::attributes::SystemAttributes;
+use crate::solar_system::SolarSystem;
 use crate::structures::stargate::Stargate;
 
 use bevy::prelude::*;
@@ -18,11 +19,11 @@ pub struct Agent {
     /// The agent's health.
     pub health: Health,
     /// The agent's home system.
-    pub home_system: HomeSystem,
+    pub home_system: SolarSystem,
     /// The agent's current system.
-    pub current_system: CurrentSystem,
+    pub current_system: SolarSystem,
     /// The agent's target location.
-    pub target_system: TargetSystem,
+    pub target_system: Option<SolarSystem>,
     /// The agests path to the target system.
     pub stargate_path: StargatePath,
     /// The targers current destination in local space
@@ -33,7 +34,7 @@ pub struct Agent {
 
 impl Agent {
     /// Creates a new agent with the given ID and name.
-    pub fn new(id: u32, name: String, home_system: SystemAttributes) -> Self {
+    pub fn new(id: u32, name: String, home_system: &SolarSystem) -> Self {
         Agent {
             id,
             name,
@@ -43,14 +44,10 @@ impl Agent {
                 current: 100.0,
                 max: 100.0,
             },
-            home_system: HomeSystem {
-                home: home_system.clone(),
-            },
-            current_system: CurrentSystem {
-                system: home_system.clone(),
-            },
-            target_system: TargetSystem { location: None },
-            speed: 100.0,
+            home_system: home_system.clone(),
+            current_system: home_system.clone(),
+            target_system: None,
+            speed: 30.0,
             stargate_path: StargatePath { path: Vec::new() },
             target_destination: None,
         }
@@ -116,30 +113,6 @@ pub enum Faction {
     Explorer,
     /// The agent is part of the enemy faction.
     Defender,
-}
-
-/// Represents the agent's home system.
-#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
-#[reflect(Component)]
-pub struct HomeSystem {
-    /// The agent's home system.
-    pub home: SystemAttributes,
-}
-
-/// Represents the agent's current system.
-#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
-#[reflect(Component)]
-pub struct CurrentSystem {
-    /// The agent's current system.
-    pub system: SystemAttributes,
-}
-
-/// Represents the agent's target system.
-#[derive(Component, Default, Reflect, Debug, Clone, PartialEq)]
-#[reflect(Component)]
-pub struct TargetSystem {
-    /// The agent's target system.
-    pub location: Option<SystemAttributes>,
 }
 
 /// vec list of stargates to travel through to reach target system

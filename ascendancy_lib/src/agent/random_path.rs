@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::seq::SliceRandom;
 
-use crate::solar_system::{attributes::SystemAttributes, gates::SystemGate};
+use crate::{solar_system::SolarSystem, structures::stargate::Stargate};
 
 use super::pathfinding::SystemGraph;
 
@@ -15,13 +15,10 @@ pub fn get_random_path_between_two_systems(
     mut timer: ResMut<PathTimer>,
     mut gizmos: Gizmos,
     system_graph: Res<SystemGraph>,
-    solar_systems: Query<(&SystemAttributes)>,
-    star_gates: Query<(&SystemGate, &GlobalTransform)>,
-    mut config: ResMut<GizmoConfig>,
+    solar_systems: Query<(&SolarSystem)>,
+    star_gates: Query<(&Stargate, &GlobalTransform)>,
 ) {
     if timer.0.tick(time.delta()).just_finished() {
-        config.line_width = 30.0;
-
         // pick two random systems
         let mut rng = rand::thread_rng();
 
@@ -31,9 +28,12 @@ pub fn get_random_path_between_two_systems(
         let system_b = solar_systems_vec.choose(&mut rng).unwrap();
 
         // get the path between the two systems
-        let path = system_graph.get_pathfinding_between(system_a, system_b);
+        let path = system_graph.get_pathfinding_between(&system_a, &system_b);
 
-        println!("Path between {} and {}:", system_a.id, system_b.id);
+        println!(
+            "Path between {} and {}:",
+            system_a.attributes.id, system_b.attributes.id
+        );
 
         match path {
             Ok(gates) => {

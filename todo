@@ -25,3 +25,8 @@
 
 
     
+AI - 
+    Split out movement logic from Agents, 
+        All flying should come from one set of functions and should just be fed a target
+    Create functions to get a random spot in a system, that isn't within a square, should be anywhere in the hex
+

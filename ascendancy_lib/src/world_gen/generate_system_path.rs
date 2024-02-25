@@ -1,14 +1,13 @@
 use bevy::prelude::*;
 
 use crate::{
-    agent::pathfinding::SystemGraph, solar_system::attributes::SystemAttributes,
-    structures::stargate::Stargate,
+    agent::pathfinding::SystemGraph, solar_system::SolarSystem, structures::stargate::Stargate,
 };
 
 /// Creates a graph of all solar systems and edge connections (Gates) used for pathfinding.
 pub fn create_system_graph(
     mut system_graph: ResMut<SystemGraph>,
-    solar_systems: Query<&SystemAttributes>,
+    solar_systems: Query<&SolarSystem>,
     jump_gate: Query<&Stargate>,
 ) {
     for system in solar_systems.iter() {
